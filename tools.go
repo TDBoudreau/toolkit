@@ -7,6 +7,7 @@ import (
 	"io"
 	"net/http"
 	"os"
+	"path"
 	"path/filepath"
 	"regexp"
 	"strings"
@@ -15,12 +16,9 @@ import (
 const randomStringSource = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_+"
 
 const (
-	// KiB represents 1 Kibibyte (1,024 bytes) as an unsigned int
-	KiB = 1 << 10
-	// MiB represents 1 Mebibyte (1,048,576 bytes) as an unsigned int
-	MiB = 1 << 20
-	// GiB represents 1 Gibibyte (1,073,741,824 bytes) as an unsigned int
-	GiB = 1 << 30
+	KiB = 1 << 10 // KiB represents 1 Kibibyte (1,024 bytes) as an unsigned int
+	MiB = 1 << 20 // MiB represents 1 Mebibyte (1,048,576 bytes) as an unsigned int
+	GiB = 1 << 30 // GiB represents 1 Gibibyte (1,073,741,824 bytes) as an unsigned int
 )
 
 // Tools is the type used to instantiate this module. Any variable of this type will have access
@@ -191,4 +189,13 @@ func (t *Tools) Slugify(s string) (string, error) {
 	}
 
 	return slug, nil
+}
+
+// DownloadStaticFile downloads a file and tries to force the browser to avoid displaying it in the browser
+// window by setting content disposition. It also allows specification of the display name.
+func (t *Tools) DownloadStaticFile(w http.ResponseWriter, r *http.Request, p, file, displayName string) {
+	fp := path.Join(p, file)
+	w.Header().Set("Content-Disposition", fmt.Sprintf("attachment; filename=\"%s\"", displayName))
+
+	http.ServeFile(w, r, fp)
 }
