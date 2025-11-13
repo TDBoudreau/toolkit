@@ -13,6 +13,7 @@ import (
 	"testing"
 )
 
+// TestTools_RandomString tests the RandomString method of the Tools type to ensure it generates a string of correct length.
 func TestTools_RandomString(t *testing.T) {
 	var testTools Tools
 
@@ -22,7 +23,8 @@ func TestTools_RandomString(t *testing.T) {
 	}
 }
 
-var uploadTests = []struct {
+// uploadFilesTests defines a collection of test cases for testing file uploads, covering allowed types, renaming, and error expectations.
+var uploadFilesTests = []struct {
 	name          string
 	allowedTypes  []string
 	renameFile    bool
@@ -33,8 +35,9 @@ var uploadTests = []struct {
 	{name: "not allowed", allowedTypes: []string{"image/jpeg"}, renameFile: false, errorExpected: true},
 }
 
+// TestTools_UploadFiles is a table test for the UploadFiles method that verifies file upload functionality.
 func TestTools_UploadFiles(t *testing.T) {
-	for _, e := range uploadTests {
+	for _, e := range uploadFilesTests {
 		// set up a pipe to avoid buffering
 		pr, pw := io.Pipe()
 		writer := multipart.NewWriter(pw)
@@ -97,7 +100,9 @@ func TestTools_UploadFiles(t *testing.T) {
 	}
 }
 
+// TestTools_UploadOneFile tests the UploadOneFile method of the Tools type by uploading a single file and verifying its existence.
 func TestTools_UploadOneFile(t *testing.T) {
+	// Test successful upload
 	// set up a pipe to avoid buffering
 	pr, pw := io.Pipe()
 	writer := multipart.NewWriter(pw)
@@ -133,7 +138,6 @@ func TestTools_UploadOneFile(t *testing.T) {
 	request.Header.Add("Content-Type", writer.FormDataContentType())
 
 	var testTools Tools
-	//testTools.AllowedFileTypes = e.allowedTypes
 
 	uploadedFile, err := testTools.UploadOneFile(request, "./testdata/uploads/", true)
 	if err != nil {
@@ -146,8 +150,18 @@ func TestTools_UploadOneFile(t *testing.T) {
 
 	// clean up
 	_ = os.Remove(fmt.Sprintf("./testdata/uploads/%s", uploadedFile.NewFileName))
+
+	// Test error case - request with no multipart form data
+	reqError := httptest.NewRequest("POST", "/upload", nil)
+	reqError.Header.Set("Content-Type", "multipart/form-data")
+
+	_, err = testTools.UploadOneFile(reqError, "./testdata/uploads")
+	if err == nil {
+		t.Error("Expected an error when no files are uploaded, but got nil")
+	}
 }
 
+// TestTools_CreateDirIfNotExist tests the CreateDirIfNotExist method to ensure it properly creates directories if they don't exist.
 func TestTools_CreateDirIfNotExist(t *testing.T) {
 	var testTools Tools
 
@@ -165,6 +179,7 @@ func TestTools_CreateDirIfNotExist(t *testing.T) {
 	_ = os.Remove("./testdata/myDir")
 }
 
+// slugTests is a slice of test cases used for verifying the behavior of the Slugify method by testing various input scenarios.
 var slugTests = []struct {
 	name          string
 	s             string
@@ -178,6 +193,7 @@ var slugTests = []struct {
 	{name: "japanese string and roman characters", s: "hello world こんにちは世界", expected: "hello-world", errorExpected: false},
 }
 
+// TestTools_Slugify tests the Slugify method of the Tools type, ensuring it generates correct slugs and handles errors.
 func TestTools_Slugify(t *testing.T) {
 	var testTools Tools
 
@@ -193,12 +209,12 @@ func TestTools_Slugify(t *testing.T) {
 	}
 }
 
+// TestTools_DownloadStaticFile tests the DownloadStaticFile method of the Tools type for correctly downloading files.
 func TestTools_DownloadStaticFile(t *testing.T) {
 	rr := httptest.NewRecorder()
 	req, _ := http.NewRequest("GET", "/", nil)
 
 	var testTools Tools
-
 	testTools.DownloadStaticFile(rr, req, "./testdata", "pic.jpg", "puppy.jpg")
 
 	res := rr.Result()
