@@ -16,4 +16,4 @@ The included tools are:
 
 ## Installation
 
-`go get -u github.com/tdboudreau/toolkit`
+`go get github.com/tdboudreau/toolkit/v2`
