@@ -8,7 +8,6 @@ import (
 	"image"
 	"image/png"
 	"io"
-	"io/ioutil"
 	"mime/multipart"
 	"net/http"
 	"net/http/httptest"
@@ -360,7 +359,7 @@ func TestTools_PushJSONToRemote(t *testing.T) {
 		// Test request parameters
 		return &http.Response{
 			StatusCode: http.StatusOK,
-			Body:       ioutil.NopCloser(bytes.NewBufferString("ok")),
+			Body:       io.NopCloser(bytes.NewBufferString("ok")),
 			Header:     make(http.Header),
 		}
 	})
